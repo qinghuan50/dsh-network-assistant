@@ -1,0 +1,4 @@
+- insert:
+    - id: local-network-assistant
+      name: '@local/dsh-network-assistant'
+      config: {}

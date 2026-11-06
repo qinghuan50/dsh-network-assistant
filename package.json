@@ -1,0 +1,60 @@
+{
+  "name": "@local/dsh-network-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Model, terminal and proxy rule routing for DeepSeek Harness.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.14.0",
+    "dsh": "0.2.1-rc.5 || 0.2.2-rc.1"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "icon.svg",
+    "locale",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node scripts/check.mjs",
+    "dev": "node dev/server.mjs"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5",
+    "@deepseek-ai/schemastery": "3.18.5",
+    "esbuild": "0.25.12",
+    "js-yaml": "4.3.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "undici": "7.30.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-typert-protocol": "0.2.1-rc.5 || 0.2.2-rc.1",
+    "@deepseek-ai/schemastery": "~3.18.5 || ~3.19.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  }
+}
