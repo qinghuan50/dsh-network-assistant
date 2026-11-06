@@ -2961,7 +2961,7 @@ var require_connect = __commonJS({
         this._sessionRegistry.register(session, sessionKey);
       }
     };
-    function buildConnector({ allowH2, useH2c, maxCachedSessions, socketPath, timeout, session: customSession, ...opts }) {
+    function buildConnector2({ allowH2, useH2c, maxCachedSessions, socketPath, timeout, session: customSession, ...opts }) {
       if (maxCachedSessions != null && (!Number.isInteger(maxCachedSessions) || maxCachedSessions < 0)) {
         throw new InvalidArgumentError("maxCachedSessions must be a positive integer or zero");
       }
@@ -3034,7 +3034,7 @@ var require_connect = __commonJS({
         return socket;
       };
     }
-    module.exports = buildConnector;
+    module.exports = buildConnector2;
   }
 });
 
@@ -8707,7 +8707,7 @@ var require_client = __commonJS({
       InformationalError,
       ClientDestroyedError
     } = require_errors();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var {
       kUrl,
       kServerName,
@@ -8880,7 +8880,7 @@ var require_client = __commonJS({
         }
         super({ webSocket, eventSource });
         if (typeof connect2 !== "function") {
-          connect2 = buildConnector({
+          connect2 = buildConnector2({
             ...tls2,
             maxCachedSessions,
             allowH2,
@@ -9487,7 +9487,7 @@ var require_pool = __commonJS({
     } = require_errors();
     var util = require_util();
     var { kUrl } = require_symbols();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var kOptions = Symbol("options");
     var kConnections = Symbol("connections");
     var kFactory = Symbol("factory");
@@ -9519,7 +9519,7 @@ var require_pool = __commonJS({
           throw new InvalidArgumentError("connect must be a function or an object");
         }
         if (typeof connect !== "function") {
-          connect = buildConnector({
+          connect = buildConnector2({
             ...tls2,
             maxCachedSessions,
             allowH2,
@@ -9739,7 +9739,7 @@ var require_round_robin_pool = __commonJS({
     } = require_errors();
     var util = require_util();
     var { kUrl } = require_symbols();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var kOptions = Symbol("options");
     var kConnections = Symbol("connections");
     var kFactory = Symbol("factory");
@@ -9772,7 +9772,7 @@ var require_round_robin_pool = __commonJS({
           throw new InvalidArgumentError("connect must be a function or an object");
         }
         if (typeof connect !== "function") {
-          connect = buildConnector({
+          connect = buildConnector2({
             ...tls2,
             maxCachedSessions,
             allowH2,
@@ -10479,7 +10479,7 @@ var require_socks5_proxy_agent = __commonJS({
     var { Socks5Client, STATES } = require_socks5_client();
     var { kDispatch, kClose, kDestroy } = require_symbols();
     var Pool = require_pool();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var { debuglog } = __require("node:util");
     var debug = debuglog("undici:socks5-proxy");
     var kProxyUrl = Symbol("proxy url");
@@ -10515,7 +10515,7 @@ var require_socks5_proxy_agent = __commonJS({
           username: options.username || (url.username ? decodeURIComponent(url.username) : null),
           password: options.password || (url.password ? decodeURIComponent(url.password) : null)
         };
-        this[kConnector] = options.connect || buildConnector({
+        this[kConnector] = options.connect || buildConnector2({
           ...options.proxyTls,
           servername: options.proxyTls?.servername || url.hostname
         });
@@ -10680,7 +10680,7 @@ var require_proxy_agent = __commonJS({
     var Pool = require_pool();
     var DispatcherBase = require_dispatcher_base();
     var { InvalidArgumentError, RequestAbortedError, SecureProxyConnectionError } = require_errors();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var Client = require_client();
     var { channels } = require_diagnostics();
     var Socks5ProxyAgent = require_socks5_proxy_agent();
@@ -10777,8 +10777,8 @@ var require_proxy_agent = __commonJS({
         } else if (username && password) {
           this[kProxyHeaders]["proxy-authorization"] = `Basic ${Buffer.from(`${decodeURIComponent(username)}:${decodeURIComponent(password)}`).toString("base64")}`;
         }
-        const connect = buildConnector({ ...opts.proxyTls });
-        this[kConnectEndpoint] = buildConnector({ ...opts.requestTls });
+        const connect = buildConnector2({ ...opts.proxyTls });
+        this[kConnectEndpoint] = buildConnector2({ ...opts.requestTls });
         const agentFactory = opts.factory || defaultAgentFactory;
         const factory = (origin2, options) => {
           const { protocol: protocol2 } = new URL(origin2);
@@ -26171,7 +26171,7 @@ var require_undici = __commonJS({
     var util = require_util();
     var { InvalidArgumentError } = errors;
     var api = require_api();
-    var buildConnector = require_connect();
+    var buildConnector2 = require_connect();
     var MockClient = require_mock_client();
     var { MockCallHistory, MockCallHistoryLog } = require_mock_call_history();
     var MockAgent = require_mock_agent();
@@ -26212,7 +26212,7 @@ var require_undici = __commonJS({
     };
     var SqliteCacheStore = require_sqlite_cache_store();
     module.exports.cacheStores.SqliteCacheStore = SqliteCacheStore;
-    module.exports.buildConnector = buildConnector;
+    module.exports.buildConnector = buildConnector2;
     module.exports.errors = errors;
     module.exports.util = {
       parseHeaders: util.parseHeaders,
@@ -26361,7 +26361,7 @@ import { isIP } from "node:net";
 var NS = "local-network-assistant";
 var MODES = ["inherit", "direct", "smart", "proxy"];
 var APIS = ["openai-completions", "openai-responses", "anthropic-messages"];
-var DEFAULTS = { mode: "inherit", paused: false, showSidebar: true, source: "system", proxyUrl: "", bypass: "", terminalEnabled: false, controllerURL: "http://127.0.0.1:9090", effectivePath: "", scriptPath: "", ruleClient: "verge", corePath: "", channels: [], routes: {} };
+var DEFAULTS = { mode: "inherit", paused: false, showSidebar: true, source: "system", proxyUrl: "", bypass: "", terminalEnabled: false, controllerURL: "http://127.0.0.1:9090", effectivePath: "", scriptPath: "", ruleClient: "verge", corePath: "", channels: [], routes: {}, tlsCompatOrigins: [] };
 var fail = (code) => {
   throw new Error(code);
 };
@@ -26422,6 +26422,12 @@ function normalize(raw = {}) {
   for (const [origin, mode] of Object.entries(v.routes)) {
     if (endpoint(origin).origin !== origin || !MODES.includes(mode)) fail("INVALID_ROUTES");
   }
+  if (!Array.isArray(v.tlsCompatOrigins) || v.tlsCompatOrigins.length > 500) fail("INVALID_TLS_COMPAT");
+  for (const origin of v.tlsCompatOrigins) {
+    const u = endpoint(origin);
+    if (u.origin !== origin || u.protocol !== "https:") fail("INVALID_TLS_COMPAT");
+  }
+  v.tlsCompatOrigins = [...new Set(v.tlsCompatOrigins)];
   return v;
 }
 function modelsFrom(payload) {
@@ -26453,6 +26459,9 @@ var import_undici = __toESM(require_undici(), 1);
 import net from "node:net";
 import tls from "node:tls";
 var noFallback = (e) => /CERT|TLS_CERT|SSL_CERT|INVALID_ARG|INVALID_URL/.test(e?.code || "");
+var TCP_TIMEOUT_MS = 1e4;
+var TLS_TIMEOUT_MS = 3e4;
+var PROXY_CONNECT_TIMEOUT_MS = 15e3;
 var bare = (h) => h.replace(/^\[|\]$/g, "");
 var authority = (host, port) => `${net.isIP(bare(host)) === 6 ? "[" + bare(host) + "]" : bare(host)}:${port}`;
 function ready(socket, event, ms) {
@@ -26538,6 +26547,8 @@ var Network = class extends import_undici.Dispatcher {
     this.generation = 0;
     this.closed = false;
     this.installed = false;
+    this.nativeConnect = (0, import_undici.buildConnector)({ timeout: TLS_TIMEOUT_MS });
+    this.connections = /* @__PURE__ */ new Map();
   }
   install() {
     if (this.installed && (0, import_undici.getGlobalDispatcher)() !== this) fail("DISPATCHER_CONFLICT");
@@ -26547,14 +26558,21 @@ var Network = class extends import_undici.Dispatcher {
       this.installed = true;
     }
   }
+  uninstall() {
+    if (this.installed && (0, import_undici.getGlobalDispatcher)() === this) {
+      (0, import_undici.setGlobalDispatcher)(this.baseline);
+      this.installed = false;
+    }
+  }
   configure(config, proxy) {
-    const fingerprint = JSON.stringify([config.mode, config.paused, config.routes, config.bypass, proxy]);
+    const fingerprint = JSON.stringify([config.mode, config.source, config.paused, config.routes, config.bypass, config.tlsCompatOrigins, proxy]);
     this.config = config;
     this.proxy = proxy;
     if (fingerprint === this.fingerprint) return;
     this.fingerprint = fingerprint;
     this.generation++;
     this.preferred.clear();
+    this.connections.clear();
     for (const agent of this.agents.values()) {
       this.oldAgents.add(agent);
       const closing = agent.close().catch(() => {
@@ -26571,14 +26589,52 @@ var Network = class extends import_undici.Dispatcher {
     if (isLoopback(url.hostname) || bypasses(url.hostname, this.config.bypass)) return "direct";
     if (this.config.paused) return "inherit";
     if (!tool && !this.managed().has(url.origin) && !Object.hasOwn(this.config.routes, url.origin)) return "inherit";
-    return this.config.routes[url.origin] || this.config.mode || "inherit";
+    const override = this.config.routes[url.origin];
+    const mode = override && override !== "inherit" ? override : this.config.mode || "inherit";
+    if (mode === "smart" && !this.proxy.url && !tool) return this.tlsCompatibility(url) ? "direct" : "inherit";
+    return mode === "inherit" ? this.proxy.url ? "proxy" : !tool && this.tlsCompatibility(url) ? "direct" : "inherit" : mode;
+  }
+  tlsCompatibility(url) {
+    return url.protocol === "https:" && this.config.tlsCompatOrigins?.includes(url.origin) === true;
+  }
+  /** Describe the policy actually used for this origin, including a missing fallback. */
+  routeStatus(url) {
+    const override = this.config.routes[url.origin];
+    const requestedMode = override && override !== "inherit" ? override : this.config.mode || "inherit";
+    const effectiveMode = this.policy(url);
+    const managed = this.managed().has(url.origin) || Object.hasOwn(this.config.routes, url.origin);
+    const issue = effectiveMode === "proxy" && !this.proxy.url ? "PROXY_NOT_CONFIGURED" : managed && !this.config.paused && requestedMode === "smart" && effectiveMode === "inherit" && !this.proxy.url ? "SMART_WITHOUT_FALLBACK" : "";
+    return { requestedMode, effectiveMode, issue };
+  }
+  /** Use undici's standard TLS/SNI/ALPN handling, including TLS over a CONNECT socket. */
+  nativeSocket(url, httpSocket) {
+    return new Promise((resolve, reject) => this.nativeConnect({ hostname: bare(url.hostname), host: url.host, protocol: url.protocol, port: url.port || (url.protocol === "https:" ? 443 : 80), ...httpSocket ? { httpSocket } : {} }, (error, socket) => error ? reject(error) : resolve(socket)));
+  }
+  /**
+   * The TLS server may serve this hostname's valid certificate without SNI. Opted-in
+   * origins may try that handshake after a reset, before any HTTP headers/body exist.
+   * Trust-chain and original-hostname verification stay mandatory; certificates,
+   * HTTP failures and partial application requests never trigger this retry.
+   */
+  async directSocket(url) {
+    try {
+      return { socket: await this.nativeSocket(url), tls: url.protocol === "https:" ? "standard" : "" };
+    } catch (error) {
+      if (!this.tlsCompatibility(url) || error.code !== "ECONNRESET") throw error;
+    }
+    const hostname = bare(url.hostname);
+    const socket = tls.connect({ host: hostname, port: Number(url.port) || 443, servername: void 0, rejectUnauthorized: true, ALPNProtocols: ["http/1.1"], checkServerIdentity: (_name, cert) => tls.checkServerIdentity(hostname, cert) });
+    socket.on("error", () => {
+    });
+    socket.setNoDelay(true);
+    socket.setKeepAlive(true, 6e4);
+    return { socket: await ready(socket, "secureConnect", TLS_TIMEOUT_MS), tls: "compat" };
   }
   async socket(url, { raw = false, tool = false, mode, proxy = this.proxy } = {}) {
     const policy = mode || this.policy(url, tool), host = url.hostname, port = Number(url.port) || (url.protocol === "https:" ? 443 : 80);
     if (policy === "inherit" && !tool) fail("RAW_BASELINE_UNAVAILABLE");
     if (policy === "inherit") fail("TERMINAL_USE_EXPLICIT_MODE");
-    const remembered = this.preferred.get(url.origin);
-    const order = policy === "direct" ? ["direct"] : policy === "proxy" ? ["proxy"] : (tool || remembered === "proxy") && proxy.reachable ? ["proxy", "direct"] : ["direct", "proxy"];
+    const order = policy === "direct" || policy === "smart" && !proxy.url ? ["direct"] : policy === "proxy" ? ["proxy"] : ["direct", "proxy"];
     let last;
     const generation = this.generation;
     for (const via of order) {
@@ -26586,11 +26642,22 @@ var Network = class extends import_undici.Dispatcher {
         last = Object.assign(new Error("PROXY_NOT_CONFIGURED"), { code: "PROXY_NOT_CONFIGURED" });
         continue;
       }
-      let socket;
+      let socket, tlsMode = "";
       try {
-        socket = via === "proxy" ? await tunnel(proxy, host, port, 5e3) : await dial(host, port, false, 3e3);
-        if (!raw && url.protocol === "https:") socket = await dial(host, port, true, 5e3, socket);
-        if (generation === this.generation) this.preferred.set(url.origin, via);
+        if (via === "proxy") socket = await tunnel(proxy, host, port, PROXY_CONNECT_TIMEOUT_MS);
+        else if (raw) socket = await dial(host, port, false, TCP_TIMEOUT_MS);
+        else {
+          const direct = await this.directSocket(url);
+          socket = direct.socket;
+          tlsMode = direct.tls;
+        }
+        if (via === "proxy" && !raw && url.protocol === "https:") socket = await this.nativeSocket(url, socket);
+        if (generation === this.generation) {
+          this.preferred.set(url.origin, via);
+          this.connections.delete(url.origin);
+          this.connections.set(url.origin, { at: Date.now(), via, tls: tlsMode || (via === "proxy" && !raw && url.protocol === "https:" ? "standard" : "") });
+          if (this.connections.size > 500) this.connections.delete(this.connections.keys().next().value);
+        }
         return { socket, via };
       } catch (e) {
         socket?.destroy();
@@ -26604,7 +26671,8 @@ var Network = class extends import_undici.Dispatcher {
     const key = [this.generation, url.origin, mode, tool].join("|");
     if (this.agents.has(key)) return this.agents.get(key);
     const proxy = { ...this.proxy };
-    const agent = new import_undici.Agent({ connections: 8, pipelining: 1, connect: (opts, callback) => {
+    const direct = (mode === "direct" || mode === "smart" && !proxy.url) && !this.tlsCompatibility(url);
+    const agent = new import_undici.Agent({ connections: 8, pipelining: 1, connect: direct ? { timeout: TLS_TIMEOUT_MS } : (opts, callback) => {
       this.socket(new URL(opts.origin || `${opts.protocol}//${authority(opts.hostname, opts.port || (opts.protocol === "https:" ? 443 : 80))}`), { mode, tool, proxy }).then(({ socket }) => callback(null, socket), (e) => callback(e, null));
     } });
     this.agents.set(key, agent);
@@ -26649,7 +26717,7 @@ var Network = class extends import_undici.Dispatcher {
     return { dispatch: (opts, handler) => this.send(opts, handler, true) };
   }
   /** Bounded explicit diagnostics; redirects are returned, never followed with an API key. */
-  async collect(url, { method = "GET", headers: headers2 = {}, body, signal, tool = false, limit = 4 * 1024 * 1024, timeout = 15e3, dispatcher } = {}) {
+  async collect(url, { method = "GET", headers: headers2 = {}, body, signal, tool = false, limit = 4 * 1024 * 1024, timeout = 45e3, dispatcher } = {}) {
     const result = await (0, import_undici.request)(url, { method, headers: headers2, body, signal: AbortSignal.any([...signal ? [signal] : [], AbortSignal.timeout(timeout)]), dispatcher: dispatcher || (tool ? this.toolDispatcher() : this), headersTimeout: timeout, bodyTimeout: timeout, maxRedirections: 0 });
     const chunks = [];
     let size = 0;
@@ -26671,6 +26739,7 @@ var Network = class extends import_undici.Dispatcher {
     await Promise.allSettled([...this.agents.values(), ...this.oldAgents].map((a) => a.destroy()));
     this.agents.clear();
     this.oldAgents.clear();
+    this.connections.clear();
   }
 };
 
@@ -26690,7 +26759,7 @@ async function systemProxy(platform = process.platform) {
   try {
     if (platform === "win32") {
       const { stdout } = await run("reg", ["query", "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings"], { timeout: 3500, windowsHide: true });
-      if (!/ProxyEnable\s+REG_DWORD\s+0x1/i.test(stdout)) return { url: "", source: "system", reason: "SYSTEM_PROXY_DISABLED" };
+      if (!/ProxyEnable\s+REG_DWORD\s+0x1(?:\s|$)/i.test(stdout)) return { url: "", source: "system", reason: /AutoConfigURL\s+REG_SZ\s+\S/.test(stdout) ? "PAC_REQUIRES_MANUAL" : "SYSTEM_PROXY_DISABLED" };
       const server = /ProxyServer\s+REG_SZ\s+([^\r\n]+)/i.exec(stdout)?.[1]?.trim() || "";
       const picked = server.includes("=") ? /(?:^|;)https=([^;]+)/i.exec(server)?.[1] || /(?:^|;)http=([^;]+)/i.exec(server)?.[1] || "" : server;
       return { url: normalize2(picked), source: "system", reason: !picked && /AutoConfigURL/.test(stdout) ? "PAC_REQUIRES_MANUAL" : "" };
@@ -30542,7 +30611,7 @@ var NetworkEngine = class {
       const section = sections.find((s) => s.ns === entry.settingsNs);
       let profile = section?.value;
       for (const p of entry.settingsPath || []) profile = profile?.[p];
-      let baseURL = profile?.baseURL || entry.baseURL || "";
+      let baseURL = profile?.baseURL || entry.baseURL || (profile ? entry.defaultBaseURL : "") || "";
       try {
         if (baseURL) endpoint(baseURL);
       } catch {
@@ -30565,7 +30634,17 @@ var NetworkEngine = class {
     if (this.closed || JSON.stringify(value) !== JSON.stringify(this.value())) return;
     this.health = { ...info, reachable, checkedAt: Date.now() };
     this.network.configure(value, { url: info.url || "", reachable, auth });
-    if (this.installGlobal && (value.mode !== "inherit" || Object.values(value.routes).some((x) => x !== "inherit")) && !value.paused) this.network.install();
+    const explicit = (mode) => mode === "direct" || mode === "proxy";
+    const needsRouting = !value.paused && (explicit(value.mode) || !!info.url || Object.values(value.routes).some(explicit) || value.tlsCompatOrigins.length > 0);
+    if (this.installGlobal) {
+      try {
+        if (needsRouting) this.network.install();
+        else this.network.uninstall();
+      } catch (e) {
+        this.health.routingError = errorCode(e);
+        throw e;
+      }
+    }
     if (value.terminalEnabled && !this.gateway.server) await this.gateway.start();
   }
   async initialize() {
@@ -30595,6 +30674,9 @@ var NetworkEngine = class {
       managed: c.managed,
       origin: c.baseURL ? endpoint(c.baseURL).origin : "",
       mode: c.baseURL ? value.routes[endpoint(c.baseURL).origin] || "inherit" : "inherit",
+      routing: c.baseURL ? this.network.routeStatus(endpoint(c.baseURL)) : { requestedMode: "inherit", effectiveMode: "inherit", issue: "" },
+      tlsCompatibility: !!c.baseURL && value.tlsCompatOrigins.includes(endpoint(c.baseURL).origin),
+      connection: c.baseURL ? this.network.connections.get(endpoint(c.baseURL).origin) || null : null,
       keyConfigured: c.managed ? await this.configured(credentialRef(c.channelId)) : void 0,
       catalog: this.lastResults.get(c.id) || null,
       chat: this.lastChats?.get(c.id) || null,
@@ -30641,6 +30723,19 @@ var NetworkEngine = class {
       if (mode === "inherit") delete routes[origin];
       else routes[origin] = mode;
       await this.write([{ op: "set", path: ["routes"], value: routes }], revision);
+      await this.refreshNetwork();
+      return this.state();
+    });
+  }
+  /** Opt one configured HTTPS origin into a hostname-verified TLS compatibility handshake. */
+  async saveTLSCompatibility(origin, enabled, revision) {
+    return this.serial(async () => {
+      const u = endpoint(origin);
+      if (u.origin !== origin || u.protocol !== "https:" || typeof enabled !== "boolean" || !this.routes().some((c) => c.baseURL && endpoint(c.baseURL).origin === origin)) fail("INVALID_TLS_COMPAT");
+      const origins = new Set(this.value().tlsCompatOrigins);
+      if (enabled) origins.add(origin);
+      else origins.delete(origin);
+      await this.write([{ op: "set", path: ["tlsCompatOrigins"], value: [...origins] }], revision);
       await this.refreshNetwork();
       return this.state();
     });
@@ -30788,6 +30883,7 @@ var NetworkEngine = class {
   }
   async testChat(id) {
     const c = this.route(id);
+    if (this.network.routeStatus(endpoint(c.baseURL)).issue === "PROXY_NOT_CONFIGURED") fail("PROXY_NOT_CONFIGURED");
     const models = c.models.length ? c.models : await this.ctx.llm.listModels(c.id);
     const model2 = models[0]?.id;
     if (!model2) fail("MODEL_REQUIRED");
@@ -30798,7 +30894,8 @@ var NetworkEngine = class {
       finish = event.reason?.kind || "";
       if (event.reason?.failure) code = errorCode(event.reason.failure);
     }
-    const result = { ok: finish === "stop", model: model2, finish, code, at: Date.now() };
+    const limited = finish === "max-tokens";
+    const result = { ok: finish === "stop" || limited, limited, model: model2, finish, code, at: Date.now() };
     this.lastChats ??= /* @__PURE__ */ new Map();
     this.lastChats.set(c.id, result);
     return result;
@@ -30833,14 +30930,15 @@ var Config = z.object({
   ruleClient: z.string().default("verge").volatile(),
   corePath: z.string().default("").volatile(),
   channels: z.array(channel).default([]).volatile(),
-  routes: z.dict(String).default({}).volatile()
+  routes: z.dict(String).default({}).volatile(),
+  tlsCompatOrigins: z.array(String).default([]).volatile()
 });
 var inject = ["settings", "credentials", "llm"];
 function apply(ctx, config) {
-  var _selectCore_dec, _refreshCore_dec, _stopCore_dec, _startCore_dec, _verifyRules_dec, _undoRules_dec, _applyRules_dec, _previewRules_dec, _discoverRules_dec, _detectRules_dec, _terminalScript_dec, _terminalOpen_dec, _terminalTest_dec, _terminalProbe_dec, _refreshProxy_dec, _detectProxy_dec, _testChat_dec, _diagnose_dec, _fetchModels_dec, _removeChannel_dec, _saveChannel_dec, _saveRoute_dec, _saveConfig_dec, _state_dec, _a, _init;
+  var _selectCore_dec, _refreshCore_dec, _stopCore_dec, _startCore_dec, _verifyRules_dec, _undoRules_dec, _applyRules_dec, _previewRules_dec, _discoverRules_dec, _detectRules_dec, _terminalScript_dec, _terminalOpen_dec, _terminalTest_dec, _terminalProbe_dec, _refreshProxy_dec, _detectProxy_dec, _testChat_dec, _diagnose_dec, _fetchModels_dec, _removeChannel_dec, _saveChannel_dec, _saveTLSCompatibility_dec, _saveRoute_dec, _saveConfig_dec, _state_dec, _a, _init;
   ctx.effect(() => ctx.settings.configure({ auto: false }, ctx.fiber));
   const engine = new NetworkEngine(ctx, config);
-  class NetworkAssistantService extends (_a = TypertRemoteService, _state_dec = [Remote], _saveConfig_dec = [Remote], _saveRoute_dec = [Remote], _saveChannel_dec = [Remote], _removeChannel_dec = [Remote], _fetchModels_dec = [Remote], _diagnose_dec = [Remote], _testChat_dec = [Remote], _detectProxy_dec = [Remote], _refreshProxy_dec = [Remote], _terminalProbe_dec = [Remote], _terminalTest_dec = [Remote], _terminalOpen_dec = [Remote], _terminalScript_dec = [Remote], _detectRules_dec = [Remote], _discoverRules_dec = [Remote], _previewRules_dec = [Remote], _applyRules_dec = [Remote], _undoRules_dec = [Remote], _verifyRules_dec = [Remote], _startCore_dec = [Remote], _stopCore_dec = [Remote], _refreshCore_dec = [Remote], _selectCore_dec = [Remote], _a) {
+  class NetworkAssistantService extends (_a = TypertRemoteService, _state_dec = [Remote], _saveConfig_dec = [Remote], _saveRoute_dec = [Remote], _saveTLSCompatibility_dec = [Remote], _saveChannel_dec = [Remote], _removeChannel_dec = [Remote], _fetchModels_dec = [Remote], _diagnose_dec = [Remote], _testChat_dec = [Remote], _detectProxy_dec = [Remote], _refreshProxy_dec = [Remote], _terminalProbe_dec = [Remote], _terminalTest_dec = [Remote], _terminalOpen_dec = [Remote], _terminalScript_dec = [Remote], _detectRules_dec = [Remote], _discoverRules_dec = [Remote], _previewRules_dec = [Remote], _applyRules_dec = [Remote], _undoRules_dec = [Remote], _verifyRules_dec = [Remote], _startCore_dec = [Remote], _stopCore_dec = [Remote], _refreshCore_dec = [Remote], _selectCore_dec = [Remote], _a) {
     constructor(ctx2) {
       super(ctx2, "networkAssistant");
       __runInitializers(_init, 5, this);
@@ -30859,6 +30957,10 @@ function apply(ctx, config) {
     async saveRoute(origin, mode, revision) {
       this.owner();
       return engine.saveRoute(origin, mode, revision);
+    }
+    async saveTLSCompatibility(origin, enabled, revision) {
+      this.owner();
+      return engine.saveTLSCompatibility(origin, enabled, revision);
     }
     async saveChannel(draft, revision, key) {
       this.owner();
@@ -30956,6 +31058,7 @@ function apply(ctx, config) {
   __decorateElement(_init, 1, "state", _state_dec, NetworkAssistantService);
   __decorateElement(_init, 1, "saveConfig", _saveConfig_dec, NetworkAssistantService);
   __decorateElement(_init, 1, "saveRoute", _saveRoute_dec, NetworkAssistantService);
+  __decorateElement(_init, 1, "saveTLSCompatibility", _saveTLSCompatibility_dec, NetworkAssistantService);
   __decorateElement(_init, 1, "saveChannel", _saveChannel_dec, NetworkAssistantService);
   __decorateElement(_init, 1, "removeChannel", _removeChannel_dec, NetworkAssistantService);
   __decorateElement(_init, 1, "fetchModels", _fetchModels_dec, NetworkAssistantService);

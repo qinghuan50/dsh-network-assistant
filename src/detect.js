@@ -9,7 +9,7 @@ export async function systemProxy(platform=process.platform){
   try{
     if(platform==='win32'){
       const {stdout}=await run('reg',['query','HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'],{timeout:3500,windowsHide:true});
-      if(!/ProxyEnable\s+REG_DWORD\s+0x1/i.test(stdout))return {url:'',source:'system',reason:'SYSTEM_PROXY_DISABLED'};
+      if(!/ProxyEnable\s+REG_DWORD\s+0x1(?:\s|$)/i.test(stdout))return {url:'',source:'system',reason:/AutoConfigURL\s+REG_SZ\s+\S/.test(stdout)?'PAC_REQUIRES_MANUAL':'SYSTEM_PROXY_DISABLED'};
       const server=/ProxyServer\s+REG_SZ\s+([^\r\n]+)/i.exec(stdout)?.[1]?.trim()||'';
       const picked=server.includes('=')?/(?:^|;)https=([^;]+)/i.exec(server)?.[1]||/(?:^|;)http=([^;]+)/i.exec(server)?.[1]||'':server;
       return {url:normalize(picked),source:'system',reason:!picked&&/AutoConfigURL/.test(stdout)?'PAC_REQUIRES_MANUAL':''};

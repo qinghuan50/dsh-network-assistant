@@ -11,7 +11,7 @@ export const Config=z.object({
   mode:z.string().default('inherit').volatile(),paused:z.boolean().default(false).volatile(),showSidebar:z.boolean().default(true).volatile(),
   source:z.string().default('system').volatile(),proxyUrl:z.string().default('').volatile(),bypass:z.string().default('').volatile(),terminalEnabled:z.boolean().default(false).volatile(),
   controllerURL:z.string().default(DEFAULTS.controllerURL).volatile(),effectivePath:z.string().default('').volatile(),scriptPath:z.string().default('').volatile(),ruleClient:z.string().default('verge').volatile(),
-  corePath:z.string().default('').volatile(),channels:z.array(channel).default([]).volatile(),routes:z.dict(String).default({}).volatile(),
+  corePath:z.string().default('').volatile(),channels:z.array(channel).default([]).volatile(),routes:z.dict(String).default({}).volatile(),tlsCompatOrigins:z.array(String).default([]).volatile(),
 });
 export const inject=['settings','credentials','llm'];
 
@@ -25,6 +25,7 @@ export function apply(ctx,config){
     @Remote async state(){this.owner();return engine.state();}
     @Remote async saveConfig(draft,revision,secrets){this.owner();return engine.saveConfig(draft,revision,secrets||{});}
     @Remote async saveRoute(origin,mode,revision){this.owner();return engine.saveRoute(origin,mode,revision);}
+    @Remote async saveTLSCompatibility(origin,enabled,revision){this.owner();return engine.saveTLSCompatibility(origin,enabled,revision);}
     @Remote async saveChannel(draft,revision,key){this.owner();return engine.saveChannel(draft,revision,key);}
     @Remote async removeChannel(id,revision){this.owner();return engine.removeChannel(id,revision);}
     @Remote async fetchModels(id){this.owner();return engine.fetchModels(id);}

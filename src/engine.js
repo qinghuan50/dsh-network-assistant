@@ -45,7 +45,7 @@ export class NetworkEngine {
     return entries.flatMap(entry=>{
       if(entry.provider?.startsWith('net-assist-'))return [];
       const section=sections.find(s=>s.ns===entry.settingsNs);let profile=section?.value;for(const p of entry.settingsPath||[])profile=profile?.[p];
-      let baseURL=profile?.baseURL||entry.baseURL||'';try{if(baseURL)endpoint(baseURL);}catch{baseURL='';}
+      let baseURL=profile?.baseURL||entry.baseURL||(profile?entry.defaultBaseURL:'')||'';try{if(baseURL)endpoint(baseURL);}catch{baseURL='';}
       return [{id:entry.provider,name:profile?.displayName||entry.displayName||entry.provider,baseURL,api:profile?.api||entry.api||'',models:(profile?.models||[]).map(x=>({id:x.id,name:x.name||x.id})),managed:false,entry,profile}];
     });
   }
@@ -59,7 +59,9 @@ export class NetworkEngine {
     if(this.closed||JSON.stringify(value)!==JSON.stringify(this.value()))return;
     this.health={...info,reachable,checkedAt:Date.now()};
     this.network.configure(value,{url:info.url||'',reachable,auth});
-    if(this.installGlobal&&(value.mode!=='inherit'||Object.values(value.routes).some(x=>x!=='inherit'))&&!value.paused)this.network.install();
+    const explicit=mode=>mode==='direct'||mode==='proxy';
+    const needsRouting=!value.paused&&(explicit(value.mode)||!!info.url||Object.values(value.routes).some(explicit)||value.tlsCompatOrigins.length>0);
+    if(this.installGlobal){try{if(needsRouting)this.network.install();else this.network.uninstall();}catch(e){this.health.routingError=errorCode(e);throw e;}}
     if(value.terminalEnabled&&!this.gateway.server)await this.gateway.start();
     // Existing terminal windows may still reference this gateway. Keep it alive until plugin
     // disposal; disabling affects newly opened sessions and never leaves old windows a dead port.
@@ -72,6 +74,9 @@ export class NetworkEngine {
     const value=this.value();const routes=await Promise.all(this.routes().map(async c=>({
       id:c.id,channelId:c.channelId||'',name:c.name,baseURL:c.baseURL,api:c.api,models:c.managed||c.models?.length?c.models:(await this.ctx.llm.listModels(c.id).catch(()=>[])).slice(0,5000).map(m=>({id:m.id,name:m.name||m.id})),managed:c.managed,
       origin:c.baseURL?endpoint(c.baseURL).origin:'',mode:c.baseURL?value.routes[endpoint(c.baseURL).origin]||'inherit':'inherit',
+      routing:c.baseURL?this.network.routeStatus(endpoint(c.baseURL)):{requestedMode:'inherit',effectiveMode:'inherit',issue:''},
+      tlsCompatibility:!!c.baseURL&&value.tlsCompatOrigins.includes(endpoint(c.baseURL).origin),
+      connection:c.baseURL?this.network.connections.get(endpoint(c.baseURL).origin)||null:null,
       keyConfigured:c.managed?await this.configured(credentialRef(c.channelId)):undefined,
       catalog:this.lastResults.get(c.id)||null,
       chat:this.lastChats?.get(c.id)||null,
@@ -95,6 +100,12 @@ export class NetworkEngine {
     await this.withCredentials(changes,()=>this.write(Object.keys(draft).map(key=>({op:'set',path:[key],value:next[key]})),revision));await this.refreshNetwork();return this.state();
   });}
   async saveRoute(origin,mode,revision){return this.serial(async()=>{const u=endpoint(origin);if(u.origin!==origin||!MODES.includes(mode))fail('INVALID_ROUTES');const routes={...this.value().routes};if(mode==='inherit')delete routes[origin];else routes[origin]=mode;await this.write([{op:'set',path:['routes'],value:routes}],revision);await this.refreshNetwork();return this.state();});}
+  /** Opt one configured HTTPS origin into a hostname-verified TLS compatibility handshake. */
+  async saveTLSCompatibility(origin,enabled,revision){return this.serial(async()=>{
+    const u=endpoint(origin);if(u.origin!==origin||u.protocol!=='https:'||typeof enabled!=='boolean'||!this.routes().some(c=>c.baseURL&&endpoint(c.baseURL).origin===origin))fail('INVALID_TLS_COMPAT');
+    const origins=new Set(this.value().tlsCompatOrigins);if(enabled)origins.add(origin);else origins.delete(origin);
+    await this.write([{op:'set',path:['tlsCompatOrigins'],value:[...origins]}],revision);await this.refreshNetwork();return this.state();
+  });}
   async saveChannel(draft,revision,key){return this.serial(async()=>{
     this.checkRevision(revision);const channels=[...this.value().channels];if(!draft||typeof draft.name!=='string'||!draft.name.trim()||draft.name.length>80||!APIS.includes(draft.api))fail('INVALID_CHANNEL');
     const baseURL=endpoint(draft.baseURL).href.replace(/\/+$/,'');const old=channels.find(c=>c.id===draft.id);if(draft.id&&!old)fail('CHANNEL_NOT_FOUND');
@@ -138,10 +149,11 @@ export class NetworkEngine {
   });}
   async diagnose(id){const c=this.route(id),start=Date.now();try{const result=await this.network.collect(listingURL(c.baseURL,c.api),{headers:await this.routeHeaders(c),limit:1024*1024});return {ok:result.status>=200&&result.status<300,httpStatus:result.status,transportReachable:true,chatVerified:false,elapsedMs:Date.now()-start};}catch(e){return {ok:false,code:errorCode(e),chatVerified:false,elapsedMs:Date.now()-start};}}
   async testChat(id){
-    const c=this.route(id);const models=c.models.length?c.models:await this.ctx.llm.listModels(c.id);const model=models[0]?.id;if(!model)fail('MODEL_REQUIRED');if(!this.ctx.llm.prepareCall)fail('HOST_CHAT_UNAVAILABLE');
+    const c=this.route(id);if(this.network.routeStatus(endpoint(c.baseURL)).issue==='PROXY_NOT_CONFIGURED')fail('PROXY_NOT_CONFIGURED');
+    const models=c.models.length?c.models:await this.ctx.llm.listModels(c.id);const model=models[0]?.id;if(!model)fail('MODEL_REQUIRED');if(!this.ctx.llm.prepareCall)fail('HOST_CHAT_UNAVAILABLE');
     const call=await this.ctx.llm.prepareCall({provider:c.id,model,maxTokens:24});let finish='',code='';
     for await(const event of call.stream({...call.config,messages:[{role:'user',content:[{type:'text',text:'Reply with OK.'}]}],signal:AbortSignal.timeout(60000)}))if(event.type==='finish'){finish=event.reason?.kind||'';if(event.reason?.failure)code=errorCode(event.reason.failure);}
-    const result={ok:finish==='stop',model,finish,code,at:Date.now()};this.lastChats??=new Map();this.lastChats.set(c.id,result);return result;
+    const limited=finish==='max-tokens';const result={ok:finish==='stop'||limited,limited,model,finish,code,at:Date.now()};this.lastChats??=new Map();this.lastChats.set(c.id,result);return result;
   }
   ruleHosts(options){return [...new Set([...(options.models?this.routes().filter(c=>c.baseURL&&['smart','proxy'].includes(this.network.policy(endpoint(c.baseURL)))).map(c=>endpoint(c.baseURL).hostname):[]),...(options.github?GITHUB_HOSTS:[]),...(options.npm?['registry.npmjs.org']:[])])].filter(h=>!isLoopback(h));}
   async dispose(){this.closed=true;clearInterval(this.timer);await this.queue.catch(()=>{});await Promise.allSettled([this.gateway.dispose(),this.core.dispose(),this.rules.dispose()]);await this.network.dispose();}

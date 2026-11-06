@@ -3,7 +3,7 @@ import { isIP } from 'node:net';
 export const NS='local-network-assistant';
 export const MODES=['inherit','direct','smart','proxy'];
 export const APIS=['openai-completions','openai-responses','anthropic-messages'];
-export const DEFAULTS={mode:'inherit',paused:false,showSidebar:true,source:'system',proxyUrl:'',bypass:'',terminalEnabled:false,controllerURL:'http://127.0.0.1:9090',effectivePath:'',scriptPath:'',ruleClient:'verge',corePath:'',channels:[],routes:{}};
+export const DEFAULTS={mode:'inherit',paused:false,showSidebar:true,source:'system',proxyUrl:'',bypass:'',terminalEnabled:false,controllerURL:'http://127.0.0.1:9090',effectivePath:'',scriptPath:'',ruleClient:'verge',corePath:'',channels:[],routes:{},tlsCompatOrigins:[]};
 export const fail=(code)=>{throw new Error(code);};
 export const credentialRef=(id)=>`NA_MODEL_${String(id).replace(/[^a-z0-9]/gi,'').toUpperCase()}`;
 export const providerId=(id)=>`net-assist-${id}`;
@@ -33,6 +33,9 @@ export function normalize(raw={}){
   if(!Array.isArray(v.channels)||v.channels.length>300)fail('INVALID_CHANNELS');
   if(!v.routes||typeof v.routes!=='object'||Array.isArray(v.routes)||Object.keys(v.routes).length>500)fail('INVALID_ROUTES');
   for(const [origin,mode]of Object.entries(v.routes)){if(endpoint(origin).origin!==origin||!MODES.includes(mode))fail('INVALID_ROUTES');}
+  if(!Array.isArray(v.tlsCompatOrigins)||v.tlsCompatOrigins.length>500)fail('INVALID_TLS_COMPAT');
+  for(const origin of v.tlsCompatOrigins){const u=endpoint(origin);if(u.origin!==origin||u.protocol!=='https:')fail('INVALID_TLS_COMPAT');}
+  v.tlsCompatOrigins=[...new Set(v.tlsCompatOrigins)];
   return v;
 }
 /** Normalize only host-owned model fields; a directory failure never replaces this array. */
